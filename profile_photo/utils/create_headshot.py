@@ -23,6 +23,7 @@ def rotate_im_and_crop(fp: str,
                        remove_bg: bool = False,
                        bg_color: tuple[int, int, int] | None = None,
                        bg_model: str = 'u2net',
+                       bg_providers: list[str] | None = None,
                        ) -> ProfilePhoto:
 
     # Get primary face in the photo (might need to be tweaked?)
@@ -107,12 +108,12 @@ def rotate_im_and_crop(fp: str,
         
         if bg_color:
             # Composite on solid color background
-            cropped_im = composite_on_color_background(cropped_im, bg_color, bg_model)
+            cropped_im = composite_on_color_background(cropped_im, bg_color, bg_model, providers=bg_providers)
             # Convert to bytes (use original format)
             final_im_bytes: bytes = cv.imencode(file_ext, cropped_im)[1].tobytes()
         else:
             # Transparent background (PNG)
-            final_im_bytes: bytes = composite_on_transparent_background(cropped_im, bg_model)
+            final_im_bytes: bytes = composite_on_transparent_background(cropped_im, bg_model, providers=bg_providers)
             file_ext = '.png'  # Force PNG for transparency
     else:
         # Convert the cropped photo to bytes

@@ -12,26 +12,42 @@ from PIL import Image
 from ..log import LOG
 
 
-def remove_background(im_bytes: bytes, model_name: str = 'u2net') -> bytes:
+def remove_background(im_bytes: bytes, model_name: str = 'u2net', providers: list[str] | None = None) -> bytes:
     """
     Remove background from an image using rembg.
     
     :param im_bytes: Image data as bytes
     :param model_name: rembg model to use (default: 'u2net')
+    :param providers: ONNX Runtime execution providers (e.g., ['CUDAExecutionProvider', 'CPUExecutionProvider'])
+                      If None, will auto-detect GPU if available
     :return: Image bytes with background removed (PNG format with alpha channel)
     """
     try:
         from rembg import remove, new_session
+        import onnxruntime as ort
     except ImportError:
         raise ImportError(
             "rembg is required for background removal. "
             "Install it with: pip install rembg"
         ) from None
     
-    LOG.info('Removing background using rembg model: %s', model_name)
+    # Auto-detect GPU if providers not specified
+    if providers is None:
+        available_providers = ort.get_available_providers()
+        if 'CUDAExecutionProvider' in available_providers:
+            providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+            LOG.info('GPU acceleration available, using CUDA')
+        elif 'TensorrtExecutionProvider' in available_providers:
+            providers = ['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']
+            LOG.info('TensorRT acceleration available')
+        else:
+            providers = ['CPUExecutionProvider']
+            LOG.info('Using CPU execution provider')
     
-    # Create a session with the specified model
-    session = new_session(model_name)
+    LOG.info('Removing background using rembg model: %s with providers: %s', model_name, providers)
+    
+    # Create a session with the specified model and providers
+    session = new_session(model_name, providers=providers)
     
     # Use rembg to remove background
     # rembg returns PNG bytes with alpha channel
@@ -40,12 +56,13 @@ def remove_background(im_bytes: bytes, model_name: str = 'u2net') -> bytes:
     return output_bytes
 
 
-def remove_background_from_cv_image(cv_image: np.ndarray, model_name: str = 'u2net') -> np.ndarray:
+def remove_background_from_cv_image(cv_image: np.ndarray, model_name: str = 'u2net', providers: list[str] | None = None) -> np.ndarray:
     """
     Remove background from an OpenCV image (numpy array).
     
     :param cv_image: OpenCV image (BGR format)
     :param model_name: rembg model to use (default: 'u2net')
+    :param providers: ONNX Runtime execution providers for GPU acceleration
     :return: OpenCV image with background removed (BGRA format)
     """
     # Convert OpenCV BGR image to RGB for rembg
@@ -59,7 +76,7 @@ def remove_background_from_cv_image(cv_image: np.ndarray, model_name: str = 'u2n
     im_bytes = output.getvalue()
     
     # Remove background (returns PNG bytes with alpha in RGB format)
-    output_bytes = remove_background(im_bytes, model_name=model_name)
+    output_bytes = remove_background(im_bytes, model_name=model_name, providers=providers)
     
     # Convert PNG bytes back to numpy array using PIL (preserves RGB)
     img_pil = Image.open(BytesIO(output_bytes))
@@ -76,7 +93,7 @@ def remove_background_from_cv_image(cv_image: np.ndarray, model_name: str = 'u2n
         return img_bgr
 
 
-def composite_on_transparent_background(cv_image: np.ndarray, model_name: str = 'u2net') -> bytes:
+def composite_on_transparent_background(cv_image: np.ndarray, model_name: str = 'u2net', providers: list[str] | None = None) -> bytes:
     """
     Remove background and return as PNG bytes with transparent background.
     
@@ -98,8 +115,21 @@ def composite_on_transparent_background(cv_image: np.ndarray, model_name: str = 
     # Convert to PIL Image
     pil_image = Image.fromarray(img_rgb)
     
+    # Auto-detect GPU if providers not specified
+    if providers is None:
+        import onnxruntime as ort
+        available_providers = ort.get_available_providers()
+        if 'CUDAExecutionProvider' in available_providers:
+            providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+            LOG.info('GPU acceleration available, using CUDA')
+        elif 'TensorrtExecutionProvider' in available_providers:
+            providers = ['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']
+            LOG.info('TensorRT acceleration available')
+        else:
+            providers = ['CPUExecutionProvider']
+    
     # Create session and remove background directly with PIL
-    session = new_session(model_name)
+    session = new_session(model_name, providers=providers)
     output_pil = remove(pil_image, session=session)
     
     # Convert PIL Image to PNG bytes
@@ -110,7 +140,8 @@ def composite_on_transparent_background(cv_image: np.ndarray, model_name: str = 
 
 def composite_on_color_background(cv_image: np.ndarray, 
                                   background_color: tuple[int, int, int] = (255, 255, 255),
-                                  model_name: str = 'u2net') -> np.ndarray:
+                                  model_name: str = 'u2net',
+                                  providers: list[str] | None = None) -> np.ndarray:
     """
     Remove background and composite on a solid color background.
     
@@ -120,7 +151,7 @@ def composite_on_color_background(cv_image: np.ndarray,
     :return: OpenCV image (BGR format) with solid color background
     """
     # Remove background
-    img_with_alpha = remove_background_from_cv_image(cv_image, model_name)
+    img_with_alpha = remove_background_from_cv_image(cv_image, model_name, providers=providers)
     
     if img_with_alpha.shape[2] != 4:
         # No alpha channel, return original

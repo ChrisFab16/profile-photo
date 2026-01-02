@@ -174,24 +174,41 @@ the best overall results for generic images (not necessarily profile photos).
 
 ## Background Removal
 
-Background removal is supported via the optional `rembg` library. Install it with:
+Background removal is supported via the optional `rembg` library. The library automatically detects and uses GPU acceleration if available.
 
+### Installation
+
+**CPU-only (default):**
 ``` console
 $ pip install rembg
 ```
 
 Or install the package with the background removal extra:
-
 ``` console
 $ pip install git+https://github.com/ChrisFab16/profile-photo.git#egg=profile-photo[bg-removal]
 ```
 
-Usage:
+**GPU-accelerated (NVIDIA CUDA):**
+``` console
+$ pip install "rembg[gpu]"
+```
+
+Or:
+``` console
+$ pip install git+https://github.com/ChrisFab16/profile-photo.git#egg=profile-photo[bg-removal-gpu]
+```
+
+**Note:** For GPU acceleration, you need:
+- NVIDIA GPU with CUDA support
+- CUDA and cuDNN installed
+- Compatible drivers
+
+### Usage
 
 ``` python3
 from profile_photo import create_headshot
 
-# Transparent background (outputs PNG)
+# Transparent background (outputs PNG) - auto-detects GPU if available
 photo = create_headshot('/path/to/image.jpg', remove_bg=True)
 
 # Solid color background
@@ -199,6 +216,13 @@ photo = create_headshot(
     '/path/to/image.jpg',
     remove_bg=True,
     bg_color=(255, 255, 255)  # White background (RGB)
+)
+
+# Manually specify GPU providers (optional)
+photo = create_headshot(
+    '/path/to/image.jpg',
+    remove_bg=True,
+    bg_providers=['CUDAExecutionProvider', 'CPUExecutionProvider']
 )
 ```
 

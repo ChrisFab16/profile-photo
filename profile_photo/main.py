@@ -22,6 +22,7 @@ def create_headshot(
     remove_bg: bool = False,
     bg_color: tuple[int, int, int] | None = None,
     bg_model: str = 'u2net',
+    bg_providers: list[str] | None = None,
 ) -> ProfilePhoto:
     """Create a Headshot Photo of a person, given an image.
 
@@ -39,6 +40,9 @@ def create_headshot(
     :param bg_color: RGB tuple for background color if remove_bg=True and you want
       a solid color background instead of transparent (e.g., (255, 255, 255) for white)
     :param bg_model: rembg model to use for background removal (default: 'u2net')
+    :param bg_providers: ONNX Runtime execution providers for GPU acceleration
+                        (e.g., ['CUDAExecutionProvider', 'CPUExecutionProvider'])
+                        If None, will auto-detect GPU if available
     :return: a :class:`ProfilePhoto` object, containing the output image and API response data
 
     """
@@ -87,7 +91,7 @@ def create_headshot(
     # rotate & crop the photo
     photo = rotate_im_and_crop(
         filepath, faces, labels, file_ext, im_bytes, debug,
-        remove_bg=remove_bg, bg_color=bg_color, bg_model=bg_model)
+        remove_bg=remove_bg, bg_color=bg_color, bg_model=bg_model, bg_providers=bg_providers)
 
     # save outputs to a local drive (if needed)
     if output_dir:
