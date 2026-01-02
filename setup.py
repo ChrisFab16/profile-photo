@@ -63,6 +63,8 @@ setup(
 ],
     test_suite='tests',
     tests_require=test_requirements,
-    # No longer need boto3 for AWS dependencies
+    extras_require={
+        'bg-removal': ['rembg>=2.0.0'],
+    },
     zip_safe=False
 )

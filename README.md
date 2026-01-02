@@ -49,6 +49,12 @@ $ cd profile-photo
 $ pip install -e .
 ```
 
+For background removal support, install with the optional extra:
+
+``` console
+$ pip install git+https://github.com/ChrisFab16/profile-photo.git#egg=profile-photo[bg-removal]
+```
+
 The package uses OpenCV for face detection, which is included as a dependency.
 
 ## What Changed?
@@ -128,6 +134,26 @@ photo = create_headshot(
 )
 ```
 
+An example with background removal (requires `rembg`):
+
+``` python3
+from profile_photo import create_headshot
+
+# Remove background with transparent output (PNG)
+photo = create_headshot('/path/to/image.jpg', remove_bg=True)
+photo.show()
+
+# Remove background with white background
+photo = create_headshot(
+    '/path/to/image.jpg',
+    remove_bg=True,
+    bg_color=(255, 255, 255)  # RGB white
+)
+
+# Install rembg: pip install rembg
+# Or: pip install profile-photo[bg-removal]
+```
+
 ## Examples
 
 Check out [example
@@ -146,10 +172,38 @@ bounding box, but then correcting the coordinates as needed by the
 estimated Person box. This logic has been fine-tuned based on what provides
 the best overall results for generic images (not necessarily profile photos).
 
+## Background Removal
+
+Background removal is supported via the optional `rembg` library. Install it with:
+
+``` console
+$ pip install rembg
+```
+
+Or install the package with the background removal extra:
+
+``` console
+$ pip install git+https://github.com/ChrisFab16/profile-photo.git#egg=profile-photo[bg-removal]
+```
+
+Usage:
+
+``` python3
+from profile_photo import create_headshot
+
+# Transparent background (outputs PNG)
+photo = create_headshot('/path/to/image.jpg', remove_bg=True)
+
+# Solid color background
+photo = create_headshot(
+    '/path/to/image.jpg',
+    remove_bg=True,
+    bg_color=(255, 255, 255)  # White background (RGB)
+)
+```
+
 ## Future Ideas
 
--   Support background removal with
-    <code><a href="https://pypi.org/project/rembg">rembg</a></code>.
 -   Add support for more advanced DNN-based face detection models.
 -   Improve person/body detection accuracy.
 

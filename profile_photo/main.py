@@ -19,6 +19,9 @@ def create_headshot(
     debug: bool = False,
     output_dir: PathLike[str] | PathLike[bytes] | str = None,
     confidence_threshold: float = 0.5,
+    remove_bg: bool = False,
+    bg_color: tuple[int, int, int] | None = None,
+    bg_model: str = 'u2net',
 ) -> ProfilePhoto:
     """Create a Headshot Photo of a person, given an image.
 
@@ -32,6 +35,10 @@ def create_headshot(
     :param output_dir: Path to a local folder to save the output image
       and API responses (optional)
     :param confidence_threshold: Minimum confidence for face detection (0.0-1.0)
+    :param remove_bg: If True, remove the background from the cropped image
+    :param bg_color: RGB tuple for background color if remove_bg=True and you want
+      a solid color background instead of transparent (e.g., (255, 255, 255) for white)
+    :param bg_model: rembg model to use for background removal (default: 'u2net')
     :return: a :class:`ProfilePhoto` object, containing the output image and API response data
 
     """
@@ -79,7 +86,8 @@ def create_headshot(
 
     # rotate & crop the photo
     photo = rotate_im_and_crop(
-        filepath, faces, labels, file_ext, im_bytes, debug)
+        filepath, faces, labels, file_ext, im_bytes, debug,
+        remove_bg=remove_bg, bg_color=bg_color, bg_model=bg_model)
 
     # save outputs to a local drive (if needed)
     if output_dir:

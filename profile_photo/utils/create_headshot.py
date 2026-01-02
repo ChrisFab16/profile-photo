@@ -20,6 +20,9 @@ def rotate_im_and_crop(fp: str,
                        file_ext: str | None = None,
                        im_bytes: bytes = None,
                        debug: bool = False,
+                       remove_bg: bool = False,
+                       bg_color: tuple[int, int, int] | None = None,
+                       bg_model: str = 'u2net',
                        ) -> ProfilePhoto:
 
     # Get primary face in the photo (might need to be tweaked?)
@@ -98,13 +101,33 @@ def rotate_im_and_crop(fp: str,
     #   crop_img = img[y:y+h, x:x+w]
     cropped_im = im[square_y1:square_y2, square_x1:square_x2]
 
-    # Show cropped image (if debug is enabled)
-    if debug:
-        show_image('Result', cropped_im)
-        cv.waitKey(0)
+    # Remove background if requested
+    if remove_bg:
+        from .background_removal import composite_on_color_background, composite_on_transparent_background
+        
+        if bg_color:
+            # Composite on solid color background
+            cropped_im = composite_on_color_background(cropped_im, bg_color, bg_model)
+            # Convert to bytes (use original format)
+            final_im_bytes: bytes = cv.imencode(file_ext, cropped_im)[1].tobytes()
+        else:
+            # Transparent background (PNG)
+            final_im_bytes: bytes = composite_on_transparent_background(cropped_im, bg_model)
+            file_ext = '.png'  # Force PNG for transparency
+    else:
+        # Convert the cropped photo to bytes
+        final_im_bytes: bytes = cv.imencode(file_ext, cropped_im)[1].tobytes()
 
-    # Convert the cropped photo to bytes
-    final_im_bytes: bytes = cv.imencode(file_ext, cropped_im)[1].tobytes()
+    # Show cropped image (if debug is enabled)
+    # Note: For transparent backgrounds, we show the BGR version for display
+    if debug:
+        display_im = cropped_im
+        if remove_bg and not bg_color:
+            # For transparent background, we need to show something
+            # Use the original cropped image for display
+            pass
+        show_image('Result', display_im)
+        cv.waitKey(0)
 
     return ProfilePhoto(
         fp, final_im_bytes, is_rotated, orientation, faces, labels, im_bytes,
