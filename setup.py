@@ -64,7 +64,7 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     extras_require={
-        'bg-removal': ['rembg>=2.0.0'],
+        'bg-removal': ['rembg>=2.0.0', 'onnxruntime>=1.15.0'],
     },
     zip_safe=False
 )
