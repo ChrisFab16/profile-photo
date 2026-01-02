@@ -28,8 +28,7 @@ class FileTooLarge(ProfilePhotoError):
     def __init__(self, size: int, max_size: int):
         msg = (f'The size of image as raw bytes ({size}) is greater '
                f'than {max_size} bytes.\n\n'
-               f'Resolution: Upload the image to S3 and pass in '
-               f'`bucket` and `key` instead.')
+               f'This error should not occur with OpenCV-based face detection.')
 
         super(FileTooLarge, self).__init__(msg)
 

@@ -9,10 +9,7 @@ from ..conftest import images
 @pytest.mark.parametrize('image', images)
 def test_create_headshot_and_save_all(examples, responses, image):
 
-    # Set the $AWS_PROFILE environment variable instead
-    profile = None
-
-    photo = create_headshot(examples / image, profile=profile)
+    photo = create_headshot(examples / image)
 
     def get_filename(file_name: str | None, api: str):
         return responses / f'{file_name}_{api}.json'
@@ -34,8 +31,4 @@ def test_create_headshot_and_show_side_by_side(examples, responses, image):
     photo.show()
 
 
-def test_with_s3_object():
-    photo = create_headshot(bucket='my-bucket',
-                            key='/my/image.jpeg',
-                            profile='my-profile',
-                            debug=True)
+# S3 support removed - test removed

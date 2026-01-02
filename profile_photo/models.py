@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from PIL import Image
 from PIL.Image import Image as PILImage
 
-from .utils.aws.rekognition_models import DetectLabelsResp, DetectFacesResp
+from .utils.face_models import DetectLabelsResp, DetectFacesResp
 from .utils.img_orient import resize_ims_and_concat_h
 
 
@@ -97,9 +97,9 @@ class ProfilePhoto:
         self.image.save(folder / out_filename)
 
     def save_responses(self, folder: Path | str | None = None,
-                       get_filename: GetResponseFileName = _get_response_filename):
+                      get_filename: GetResponseFileName = _get_response_filename):
         """
-        Save (or cache) Rekognition API responses -- from the Detect Faces API
+        Save (or cache) face detection responses -- from the Detect Faces API
         and Detect Labels API -- as separate JSON files under a folder or path.
 
         """

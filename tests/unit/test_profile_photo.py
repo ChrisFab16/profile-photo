@@ -13,10 +13,10 @@ DEBUG = as_bool(getenv('DEBUG', '0'))
 
 
 def test_create_headshot_raises_missing_params():
-    with pytest.raises(MissingParams) as e:
+    with pytest.raises(ValueError) as e:
         _ = create_headshot()
 
-    assert 'parameters [`bucket`, `key`] are required' in str(e.value)
+    assert 'filepath_or_bytes must be provided' in str(e.value)
 
 
 @pytest.mark.parametrize('image', images)

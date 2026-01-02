@@ -9,7 +9,7 @@ Sample Usage:
     >>> from profile_photo import create_headshot
     >>> photo = create_headshot('/path/to/image')
     >>> photo.show()
-    >>> # Optional: cache the Rekognition API responses
+    >>> # Optional: cache the face detection responses
     >>> photo.save_responses('/path/to/folder')
 
 For full documentation and more advanced usage, please see

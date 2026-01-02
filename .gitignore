@@ -95,3 +95,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# User input and output folders (contain personal images)
+profile_photo/input/
+profile_photo/output/

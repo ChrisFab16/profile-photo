@@ -19,17 +19,15 @@ class Util:
         return ThreadPoolExecutor(max_workers=cls.max_threads)
 
     @staticmethod
-    def validate_file_len(size: int, _max_size=5_000_000):
-        """Validate file length is < 5 MB.
+    def validate_file_len(size: int, _max_size=None):
+        """Validate file length (optional, no longer required for OpenCV).
 
-        The maximum images size as raw bytes passed in as parameter to
-        the Rekognition API is 5 MB.
-
-        See: https://docs.aws.amazon.com/rekognition/latest/dg/limits.html#quotas
+        This method is kept for backward compatibility but no longer enforces
+        a size limit since OpenCV can handle larger images.
 
         """
-        if size > _max_size:
-            raise FileTooLarge(size, _max_size) from None
+        # No longer enforcing size limits with OpenCV
+        pass
 
     @staticmethod
     def validate_params(required_if_missing: Params | None = None, **params):

@@ -40,22 +40,11 @@
 
 ## Install
 
-Local tests:
-
-> The `[all]`
-[extra](https://packaging.python.org/en/latest/tutorials/installing-packages/#installing-extras)
-installs `boto3`, which is excluded by default - this assumes an AWS
-environment.
-
-``` console
-$ pip install profile-photo[all]
-```
-
-[AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-package.html) deployment:
-
 ``` console
 $ pip install profile-photo
 ```
+
+The package uses OpenCV for face detection, which is included as a dependency.
 
 ## Features
 
@@ -63,12 +52,10 @@ $ pip install profile-photo
 -   Exports a helper function, <code><a href="https://profile-photo.readthedocs.io/en/latest/profile_photo.html#profile_photo.create_headshot">create_headshot</a></code>,
     to create a
     close-up or headshot of the primary face in a photo or image.
--   Leverages [Amazon
-    Rekognition](https://docs.aws.amazon.com/rekognition/latest/dg/what-is.html)
-    to detect bounding boxes of a person's *Face* and relevant Labels,
-    such as *Person*.
+-   Uses [OpenCV](https://opencv.org/) for face detection - no cloud services required!
+-   Detects faces using OpenCV's Haar Cascade or DNN-based face detection models.
 -   Exposes helper methods to save the result image (*cropped*) as well
-    as API responses to a local folder.
+    as detection responses to a local folder.
 
 ## Usage
 
@@ -80,18 +67,14 @@ from urllib.request import urlopen
 
 from profile_photo import create_headshot
 
-
-# Set the $AWS_PROFILE environment variable instead
-aws_profile = 'my-profile'
-
 im_url = 'https://raw.githubusercontent.com/rnag/profile-photo/main/examples/woman-2.jpeg'
 im_bytes = urlopen(im_url).read()
 
-photo = create_headshot(im_bytes, profile=aws_profile)
+photo = create_headshot(im_bytes)
 photo.show()
 ```
 
-An example with a local image, and saving the result image and API
+An example with a local image, and saving the result image and detection
 responses to a folder:
 
 ``` python3
@@ -100,14 +83,14 @@ from __future__ import annotations
 from profile_photo import create_headshot
 
 
-# customize local file location for API responses
+# customize local file location for detection responses
 def get_filename(file_name: str | None, api: str):
     return f'responses/{file_name}_{api}.json'
 
 
 photo = create_headshot('/path/to/image')
 
-# this saves image and API responses to a results/ folder
+# this saves image and detection responses to a results/ folder
 # can also be achieved by passing `output_dir` above
 photo.save_all('results', get_response_filename=get_filename)
 
@@ -115,26 +98,22 @@ photo.save_all('results', get_response_filename=get_filename)
 photo.show()
 ```
 
-Lastly, an example with an image on S3, and passing in cached
-[Rekognition
-API](https://docs.aws.amazon.com/rekognition/latest/APIReference/Welcome.html)
-responses for the image:
+An example with cached face detection responses:
 
 ``` python3
 from pathlib import Path
 
 from profile_photo import create_headshot
 
-
-s3_image_path = Path('path/to/image.jpg')
+image_path = Path('path/to/image.jpg')
 responses_dir = Path('./my/responses')
 
-_photo = create_headshot(bucket='my-bucket',
-                         key=str(s3_image_path),
-                         profile='my-profile',
-                         faces=responses_dir / f'{s3_image_path.stem}_DetectFaces.json',
-                         labels=responses_dir / f'{s3_image_path.stem}_DetectLabels.json',
-                         debug=True)
+photo = create_headshot(
+    image_path,
+    faces=responses_dir / f'{image_path.stem}_DetectFaces.json',
+    labels=responses_dir / f'{image_path.stem}_DetectLabels.json',
+    debug=True
+)
 ```
 
 ## Examples
@@ -145,27 +124,22 @@ GitHub for sample use cases and results.
 
 ## How It Works
 
-This library currently makes calls to the [Amazon
-Rekognition](https://docs.aws.amazon.com/rekognition/latest/dg/what-is.html)
-APIs to detect bounding boxes on a Face and Person in a photo.
+This library uses [OpenCV](https://opencv.org/) for face detection - no cloud
+services or API keys required! It detects faces using OpenCV's built-in Haar
+Cascade classifier (default) or optionally a DNN-based face detection model.
 
-It then uses custom, in-house logic to determine the X/Y coordinates for
+The library then uses custom, in-house logic to determine the X/Y coordinates for
 cropping. This mainly involves "blowing up" or enlarging the Face
 bounding box, but then correcting the coordinates as needed by the
-Person box. This logic has been fine-tuned based on what I have found
-provide the best overall results for generic images (not necessary
-profile photos).
-
-In the future, other ideas other than *Rekognition* might be considered
--- such as existing machine learning approaches or even a solution with
-the `opencv` library in Python alone.
+estimated Person box. This logic has been fine-tuned based on what provides
+the best overall results for generic images (not necessarily profile photos).
 
 ## Future Ideas
 
 -   Support background removal with
     <code><a href="https://pypi.org/project/rembg">rembg</a></code>.
--   Investigate other (alternate) approaches to *Rekognition* for
-    detecting a face and person in a photo.
+-   Add support for more advanced DNN-based face detection models.
+-   Improve person/body detection accuracy.
 
 ## Credits
 

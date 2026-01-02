@@ -5,8 +5,8 @@ from os.path import splitext
 import cv2 as cv
 import numpy as np
 
-from .aws.rekognition_models import DetectFacesResp, DetectLabelsResp
-from .aws.rekognition_utils import best_fit_coordinates, show_image
+from .face_models import DetectFacesResp, DetectLabelsResp
+from .face_utils import best_fit_coordinates, show_image
 from .img_orient import get_oriented_im_bytes, get_im_orientation
 from ..models import ProfilePhoto
 
@@ -46,9 +46,57 @@ def rotate_im_and_crop(fp: str,
     # Get X/Y coordinates for cropping
     coords = best_fit_coordinates(im, face.bounding_box, person_box)
 
-    # Crop the Photo
+    # Make the crop square by using the larger dimension
+    crop_width = coords.x2 - coords.x1
+    crop_height = coords.y2 - coords.y1
+    crop_size = max(crop_width, crop_height)
+    
+    # Calculate center of current crop
+    center_x = (coords.x1 + coords.x2) // 2
+    center_y = (coords.y1 + coords.y2) // 2
+    
+    # Calculate square coordinates centered on the original crop
+    half_size = crop_size // 2
+    square_x1 = center_x - half_size
+    square_y1 = center_y - half_size
+    square_x2 = square_x1 + crop_size
+    square_y2 = square_y1 + crop_size
+    
+    # Adjust if we go outside image boundaries
+    im_height, im_width = im.shape[:2]
+    
+    if square_x1 < 0:
+        square_x2 += abs(square_x1)
+        square_x1 = 0
+    if square_x2 > im_width:
+        square_x1 -= (square_x2 - im_width)
+        square_x2 = im_width
+    
+    if square_y1 < 0:
+        square_y2 += abs(square_y1)
+        square_y1 = 0
+    if square_y2 > im_height:
+        square_y1 -= (square_y2 - im_height)
+        square_y2 = im_height
+    
+    # Ensure final crop is square (use the smaller dimension to guarantee it fits)
+    final_width = square_x2 - square_x1
+    final_height = square_y2 - square_y1
+    final_size = min(final_width, final_height)
+    
+    # Re-center with the final square size
+    center_x = (square_x1 + square_x2) // 2
+    center_y = (square_y1 + square_y2) // 2
+    half_final = final_size // 2
+    
+    square_x1 = center_x - half_final
+    square_y1 = center_y - half_final
+    square_x2 = square_x1 + final_size
+    square_y2 = square_y1 + final_size
+    
+    # Crop the Photo (now square)
     #   crop_img = img[y:y+h, x:x+w]
-    cropped_im = im[coords.y1:coords.y2, coords.x1:coords.x2]
+    cropped_im = im[square_y1:square_y2, square_x1:square_x2]
 
     # Show cropped image (if debug is enabled)
     if debug:

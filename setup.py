@@ -45,7 +45,7 @@ setup(
         'Source': 'https://github.com/rnag/profile-photo',
     },
     license=about['__license__'],
-    keywords=['profile', 'headshot', 'photo', 'crop', 'profile-photo', 'rekognition'],
+    keywords=['profile', 'headshot', 'photo', 'crop', 'profile-photo', 'opencv', 'face-detection'],
     classifiers=[
         # Ref: https://pypi.org/classifiers/
         # 'Development Status :: 5 - Production/Stable',
@@ -63,6 +63,6 @@ setup(
 ],
     test_suite='tests',
     tests_require=test_requirements,
-    extras_require={'all': 'boto3'},
+    # No longer need boto3 for AWS dependencies
     zip_safe=False
 )
