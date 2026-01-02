@@ -48,27 +48,32 @@ def remove_background_from_cv_image(cv_image: np.ndarray, model_name: str = 'u2n
     :param model_name: rembg model to use (default: 'u2net')
     :return: OpenCV image with background removed (BGRA format)
     """
-    # Convert OpenCV image to bytes
-    is_success, im_buf_arr = cv.imencode('.jpg', cv_image)
-    if not is_success:
-        raise ValueError("Failed to encode image")
-    im_bytes = im_buf_arr.tobytes()
+    # Convert OpenCV BGR image to RGB for rembg
+    # rembg expects RGB format
+    img_rgb = cv.cvtColor(cv_image, cv.COLOR_BGR2RGB)
     
-    # Remove background (returns PNG bytes with alpha)
+    # Convert RGB image to bytes using PIL (preserves RGB)
+    pil_image = Image.fromarray(img_rgb)
+    output = BytesIO()
+    pil_image.save(output, format='PNG')
+    im_bytes = output.getvalue()
+    
+    # Remove background (returns PNG bytes with alpha in RGB format)
     output_bytes = remove_background(im_bytes, model_name=model_name)
     
-    # Convert PNG bytes back to OpenCV image
-    img_array = np.frombuffer(output_bytes, dtype=np.uint8)
-    img_with_alpha = cv.imdecode(img_array, cv.IMREAD_UNCHANGED)
+    # Convert PNG bytes back to numpy array using PIL (preserves RGB)
+    img_pil = Image.open(BytesIO(output_bytes))
+    img_rgba = np.array(img_pil)
     
     # Convert RGBA to BGRA (OpenCV uses BGR)
-    if img_with_alpha.shape[2] == 4:
-        # PIL uses RGBA, OpenCV uses BGRA
-        img_bgra = cv.cvtColor(img_with_alpha, cv.COLOR_RGBA2BGRA)
+    if img_rgba.shape[2] == 4:
+        # Convert RGB to BGR for OpenCV
+        img_bgra = cv.cvtColor(img_rgba, cv.COLOR_RGBA2BGRA)
         return img_bgra
     else:
-        # If no alpha channel, return as-is
-        return img_with_alpha
+        # If no alpha channel, convert RGB to BGR
+        img_bgr = cv.cvtColor(img_rgba, cv.COLOR_RGB2BGR)
+        return img_bgr
 
 
 def composite_on_transparent_background(cv_image: np.ndarray, model_name: str = 'u2net') -> bytes:
