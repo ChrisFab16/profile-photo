@@ -1,10 +1,6 @@
 # Profile Photo
 
-[![image](https://img.shields.io/pypi/v/profile-photo.svg)](https://pypi.org/project/profile-photo)
-[![image](https://img.shields.io/pypi/pyversions/profile-photo.svg)](https://pypi.org/project/profile-photo)
-[![image](https://github.com/rnag/profile-photo/actions/workflows/dev.yml/badge.svg)](https://github.com/rnag/profile-photo/actions/workflows/dev.yml)
-[![Documentation Status](https://readthedocs.org/projects/profile-photo/badge/?version=latest)](https://profile-photo.readthedocs.io/en/latest/?version=latest)
-[![Updates](https://pyup.io/repos/github/rnag/profile-photo/shield.svg)](https://pyup.io/repos/github/rnag/profile-photo/)
+> **Fork Note**: This is a fork of [rnag/profile-photo](https://github.com/rnag/profile-photo) with OpenCV-based face detection instead of AWS Rekognition. See [What Changed?](#what-changed) below for details.
 
 *Center* + *Crop* Image to create a Profile Pic or
 [Headshot](https://www.nfi.edu/headshot-photo).
@@ -36,12 +32,21 @@
   <img src="https://raw.githubusercontent.com/rnag/profile-photo/main/examples/wonder-woman-1-out.jpeg" height="100" width="90" />
 </p>
 
-**If this project has helped you, please consider making a** [donation](https://www.buymeacoffee.com/ritviknag).
 
 ## Install
 
+Install directly from this GitHub fork:
+
 ``` console
-$ pip install profile-photo
+$ pip install git+https://github.com/ChrisFab16/profile-photo.git
+```
+
+Or clone and install in development mode:
+
+``` console
+$ git clone https://github.com/ChrisFab16/profile-photo.git
+$ cd profile-photo
+$ pip install -e .
 ```
 
 The package uses OpenCV for face detection, which is included as a dependency.
@@ -62,7 +67,7 @@ The migration maintains the same API interface, so existing code continues to wo
 ## Features
 
 
--   Exports a helper function, <code><a href="https://profile-photo.readthedocs.io/en/latest/profile_photo.html#profile_photo.create_headshot">create_headshot</a></code>,
+-   Exports a helper function, <code>create_headshot</code>,
     to create a
     close-up or headshot of the primary face in a photo or image.
 -   Uses [OpenCV](https://opencv.org/) for face detection - no cloud services required!
@@ -72,18 +77,12 @@ The migration maintains the same API interface, so existing code continues to wo
 
 ## Usage
 
-Basic usage, with a [sample
-image](https://raw.githubusercontent.com/rnag/profile-photo/main/examples/woman-2.jpeg):
+Basic usage, with a sample image:
 
 ``` python3
-from urllib.request import urlopen
-
 from profile_photo import create_headshot
 
-im_url = 'https://raw.githubusercontent.com/rnag/profile-photo/main/examples/woman-2.jpeg'
-im_bytes = urlopen(im_url).read()
-
-photo = create_headshot(im_bytes)
+photo = create_headshot('/path/to/image.jpg')
 photo.show()
 ```
 
@@ -132,7 +131,7 @@ photo = create_headshot(
 ## Examples
 
 Check out [example
-images](https://github.com/rnag/profile-photo/tree/main/examples) on
+images](https://github.com/ChrisFab16/profile-photo/tree/main/examples) on
 GitHub for sample use cases and results.
 
 ## How It Works
@@ -156,16 +155,12 @@ the best overall results for generic images (not necessarily profile photos).
 
 ## Credits
 
-This package was created with
+This package is a fork of [rnag/profile-photo](https://github.com/rnag/profile-photo), originally created by [Ritvik Nag](https://github.com/rnag).
+
+The original package was created with
 [Cookiecutter](https://github.com/cookiecutter/cookiecutter) and the
 [rnag/cookiecutter-pypackage](https://github.com/rnag/cookiecutter-pypackage)
 project template.
-
-## Buy me a coffee
-
-Liked some of my work? Buy me a coffee (or more likely a beer)
-
-<a href="https://www.buymeacoffee.com/ritviknag" target="_blank"><img src="https://bmc-cdn.nyc3.digitaloceanspaces.com/BMC-button-images/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;"></a>
 
 ## License
 

@@ -41,8 +41,8 @@ setup(
     include_package_data=True,
     install_requires=requires,
     project_urls={
-        'Documentation': 'https://profile-photo.readthedocs.io',
-        'Source': 'https://github.com/rnag/profile-photo',
+        'Source': 'https://github.com/ChrisFab16/profile-photo',
+        'Original': 'https://github.com/rnag/profile-photo',
     },
     license=about['__license__'],
     keywords=['profile', 'headshot', 'photo', 'crop', 'profile-photo', 'opencv', 'face-detection'],
