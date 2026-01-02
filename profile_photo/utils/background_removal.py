@@ -84,19 +84,27 @@ def composite_on_transparent_background(cv_image: np.ndarray, model_name: str = 
     :param model_name: rembg model to use (default: 'u2net')
     :return: PNG image bytes with transparent background
     """
-    # Remove background
-    img_with_alpha = remove_background_from_cv_image(cv_image, model_name)
+    try:
+        from rembg import remove, new_session
+    except ImportError:
+        raise ImportError(
+            "rembg is required for background removal. "
+            "Install it with: pip install rembg"
+        ) from None
     
-    # Convert BGRA to RGBA for PIL
-    if img_with_alpha.shape[2] == 4:
-        img_rgba = cv.cvtColor(img_with_alpha, cv.COLOR_BGRA2RGBA)
-    else:
-        img_rgba = img_with_alpha
+    # Convert OpenCV BGR to RGB for PIL
+    img_rgb = cv.cvtColor(cv_image, cv.COLOR_BGR2RGB)
     
-    # Convert to PIL Image and then to PNG bytes
-    pil_image = Image.fromarray(img_rgba)
+    # Convert to PIL Image
+    pil_image = Image.fromarray(img_rgb)
+    
+    # Create session and remove background directly with PIL
+    session = new_session(model_name)
+    output_pil = remove(pil_image, session=session)
+    
+    # Convert PIL Image to PNG bytes
     output = BytesIO()
-    pil_image.save(output, format='PNG')
+    output_pil.save(output, format='PNG')
     return output.getvalue()
 
 
