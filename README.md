@@ -46,6 +46,19 @@ $ pip install profile-photo
 
 The package uses OpenCV for face detection, which is included as a dependency.
 
+## What Changed?
+
+This library was previously dependent on **Amazon Rekognition**, a cloud-based face detection service. We've migrated to **OpenCV** to eliminate all web service dependencies. Here's why:
+
+- **No API keys required** - Works completely offline without any cloud service authentication
+- **No internet connection needed** - Process images locally without sending data to external servers
+- **No usage costs** - Free to use without per-request pricing or service limits
+- **Privacy-first** - Your images never leave your machine
+- **Faster processing** - No network latency, all processing happens locally
+- **Simpler deployment** - No AWS configuration, credentials, or region setup required
+
+The migration maintains the same API interface, so existing code continues to work. Face detection now uses OpenCV's built-in Haar Cascade classifier (default) or optional DNN models for improved accuracy.
+
 ## Features
 
 
