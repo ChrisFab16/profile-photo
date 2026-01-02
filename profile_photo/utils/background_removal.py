@@ -21,7 +21,7 @@ def remove_background(im_bytes: bytes, model_name: str = 'u2net') -> bytes:
     :return: Image bytes with background removed (PNG format with alpha channel)
     """
     try:
-        from rembg import remove
+        from rembg import remove, new_session
     except ImportError:
         raise ImportError(
             "rembg is required for background removal. "
@@ -30,9 +30,12 @@ def remove_background(im_bytes: bytes, model_name: str = 'u2net') -> bytes:
     
     LOG.info('Removing background using rembg model: %s', model_name)
     
+    # Create a session with the specified model
+    session = new_session(model_name)
+    
     # Use rembg to remove background
     # rembg returns PNG bytes with alpha channel
-    output_bytes = remove(im_bytes, model_name=model_name)
+    output_bytes = remove(im_bytes, session=session)
     
     return output_bytes
 

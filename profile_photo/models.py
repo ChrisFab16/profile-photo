@@ -92,6 +92,11 @@ class ProfilePhoto:
         folder.mkdir(exist_ok=True)
 
         filename, ext = splitext(fp if (fp := self.filepath) else self._DEFAULT_FILENAME)
+        
+        # If image has transparency (RGBA mode), use PNG extension
+        if self.image.mode in ('RGBA', 'LA') or 'transparency' in self.image.info:
+            ext = '.png'
+        
         out_filename = get_filename(basename(filename), ext)
 
         self.image.save(folder / out_filename)
